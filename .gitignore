@@ -1,26 +1,17 @@
-# Node
-node_modules/
+# Node / Next
+node_modules
+.next
+out
+.vercel
+
+# Env
+.env
+.env.*.local
+.env.local
+!.env.example
+
+# Logs / misc
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-.pnpm-store/
-
-# Next.js
-.next/
-out/
-.vercel/
-
-# TypeScript
-*.tsbuildinfo
-
-# Env files
-.env
-.env.local
-.env.*.local
-
-# Mac/Windows
 .DS_Store
-Thumbs.db
-
-.vercel
