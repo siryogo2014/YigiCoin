@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Altura completa para mantener el fondo fijo */
+html, body { min-height: 100%; }
+
+/* ===== FONDO GLOBAL =====
+   1) Gradiente base
+   2) Rejilla suave
+   3) Tres “glows” radiales
+   No dependemos de @apply ni clases Tailwind aquí. */
+body {
+  background:
+    /* gradiente base */
+    linear-gradient(180deg, #eef2ff 0%, #ffffff 40%, #f5f3ff 100%),
+    /* rejilla vertical */
+    repeating-linear-gradient(
+      90deg,
+      rgba(99,102,241,0.06) 0px,
+      rgba(99,102,241,0.06) 1px,
+      transparent 1px,
+      transparent 60px
+    ),
+    /* rejilla horizontal */
+    repeating-linear-gradient(
+      0deg,
+      rgba(99,102,241,0.08) 0px,
+      rgba(99,102,241,0.08) 1px,
+      transparent 1px,
+      transparent 60px
+    ),
+    /* glows */
+    radial-gradient(1000px 600px at -10% -10%, rgba(99,102,241,.18), transparent 60%),
+    radial-gradient(800px 500px at 110% 10%, rgba(236,72,153,.16), transparent 60%),
+    radial-gradient(600px 500px at 50% 120%, rgba(16,185,129,.14), transparent 60%);
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
+  background-repeat: no-repeat;
+}
+
+/* Si tus subrayados amarillos te molestan, eran por @apply.
+   Estas utilidades no son necesarias para el fondo, así que las omito.
+   Puedes seguir usando clases Tailwind directamente en los componentes. */
