@@ -1,1 +1,18 @@
 * text=auto
+* text=auto eol=lf
+
+# Scripts de Windows: mantener CRLF
+*.bat eol=crlf
+*.cmd eol=crlf
+*.ps1 eol=crlf
+
+# (Si usas bash scripts, forzamos LF)
+*.sh eol=lf
+
+# Binarios (sin conversiones de texto)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
