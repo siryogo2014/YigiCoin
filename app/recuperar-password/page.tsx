@@ -17,7 +17,7 @@ export default function RecuperarPasswordPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -25,7 +25,7 @@ export default function RecuperarPasswordPage() {
     }));
   };
 
-  const handleStep1Submit = async (e) => {
+  const handleStep1Submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -52,7 +52,7 @@ export default function RecuperarPasswordPage() {
     }
   };
 
-  const handleStep2Submit = async (e) => {
+  const handleStep2Submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -80,7 +80,7 @@ export default function RecuperarPasswordPage() {
     }
   };
 
-  const handleStep3Submit = async (e) => {
+  const handleStep3Submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);

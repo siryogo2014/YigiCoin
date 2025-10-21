@@ -47,6 +47,7 @@ export default function HomePage() {
     // NUEVO: Funciones para usar puntos
     usePointsForTimeExtension,
     usePointsForTimerUpdate,
+    simulatePaymentSuccess,
     RANKS,
     mounted: simulationMounted,
   } = useSimulation();
@@ -208,6 +209,7 @@ export default function HomePage() {
                     : 6,
         name: currentRankData?.name || 'Registrado',
         price: currentRankData?.price || 3,
+        balance: (simulationState?.balance ?? 0),
       },
       next: {
         id: nextRankData
@@ -259,15 +261,15 @@ export default function HomePage() {
     return simulationState.transactionHistory.length > 0
       ? simulationState.transactionHistory
       : [
-          {
-            id: 1,
-            tipo: 'Ingreso',
-            descripcion: 'Balance inicial - 2 referidos',
-            monto: 6,
-            fecha: '2024-01-15',
-            estado: 'Completado',
-          },
-        ];
+        {
+          id: 1,
+          tipo: 'Ingreso',
+          descripcion: 'Balance inicial - 2 referidos',
+          monto: 6,
+          fecha: '2024-01-15',
+          estado: 'Completado',
+        },
+      ];
   }, [simulationState.transactionHistory]);
 
   const tabs = useMemo(() => {
@@ -598,11 +600,10 @@ export default function HomePage() {
                     <button
                       onClick={() => !timerState.isPageBlocked && setActiveTab('ascender')}
                       disabled={simulationState.currentRank !== 'elite' && timerState.isPageBlocked}
-                      className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2 rounded-lg font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
-                        simulationState.currentRank !== 'elite' && timerState.isPageBlocked
+                      className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2 rounded-lg font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${simulationState.currentRank !== 'elite' && timerState.isPageBlocked
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 cursor-pointer'
-                      }`}
+                        }`}
                     >
                       Ascender a {nextRankData.name}
                     </button>
@@ -612,9 +613,9 @@ export default function HomePage() {
 
               {/* Selector de tema */}
               {simulationState.currentRank === 'basico' ||
-              simulationState.currentRank === 'vip' ||
-              simulationState.currentRank === 'premium' ||
-              simulationState.currentRank === 'elite' ? (
+                simulationState.currentRank === 'vip' ||
+                simulationState.currentRank === 'premium' ||
+                simulationState.currentRank === 'elite' ? (
                 <div
                   className={`${selectedTheme === 'oscuro' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'} border rounded-xl p-4 mb-6 max-w-md mx-auto`}
                 >
@@ -627,26 +628,24 @@ export default function HomePage() {
                   <div className="flex space-x-2">
                     <button
                       onClick={() => handleThemeChange('claro')}
-                      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                        selectedTheme === 'claro'
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${selectedTheme === 'claro'
                           ? 'bg-blue-600 text-white'
                           : selectedTheme === 'oscuro'
                             ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       <i className="ri-sun-line mr-1"></i>
                       Claro
                     </button>
                     <button
                       onClick={() => handleThemeChange('oscuro')}
-                      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                        selectedTheme === 'oscuro'
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${selectedTheme === 'oscuro'
                           ? 'bg-blue-600 text-white'
                           : selectedTheme === 'oscuro'
                             ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       <i className="ri-moon-line mr-1"></i>
                       Oscuro
@@ -732,11 +731,10 @@ export default function HomePage() {
                   <button
                     onClick={handleUpgrade}
                     disabled={!canUpgrade()}
-                    className={`w-full py-2.5 sm:py-3 rounded-lg font-semibold transition-all cursor-pointer flex items-center justify-center space-x-2 text-sm sm:text-base ${
-                      canUpgrade()
+                    className={`w-full py-2.5 sm:py-3 rounded-lg font-semibold transition-all cursor-pointer flex items-center justify-center space-x-2 text-sm sm:text-base ${canUpgrade()
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
                         : 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     <i className="ri-arrow-up-line text-lg sm:text-xl"></i>
                     <span>
@@ -996,15 +994,14 @@ export default function HomePage() {
                         </td>
                         <td className="py-3 px-2 sm:px-4">
                           <span
-                            className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-bold ${
-                              transaccion.tipo === 'Ingreso'
+                            className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-bold ${transaccion.tipo === 'Ingreso'
                                 ? selectedTheme === 'oscuro'
                                   ? 'bg-green-800 text-green-200'
                                   : 'bg-green-100 text-green-800'
                                 : selectedTheme === 'oscuro'
                                   ? 'bg-red-800 text-red-200'
                                   : 'bg-red-100 text-red-800'
-                            }`}
+                              }`}
                           >
                             {transaccion.tipo}
                           </span>
@@ -1016,9 +1013,8 @@ export default function HomePage() {
                         </td>
                         <td className="py-3 px-2 sm:px-4">
                           <span
-                            className={`text-sm sm:text-lg font-bold ${
-                              transaccion.monto > 0 ? 'text-green-600' : 'text-red-600'
-                            }`}
+                            className={`text-sm sm:text-lg font-bold ${transaccion.monto > 0 ? 'text-green-600' : 'text-red-600'
+                              }`}
                           >
                             {transaccion.monto > 0 ? '+' : '-'}$
                             {Math.abs(transaccion.monto).toLocaleString()}
@@ -1044,20 +1040,19 @@ export default function HomePage() {
                     const isCurrentOrPassed =
                       simulationState.currentRank === key ||
                       Object.keys(RANKS).indexOf(simulationState.currentRank) >
-                        Object.keys(RANKS).indexOf(key);
+                      Object.keys(RANKS).indexOf(key);
 
                     return (
                       <div
                         key={key}
-                        className={`rounded-lg p-2 sm:p-3 border ${
-                          isCurrentOrPassed
+                        className={`rounded-lg p-2 sm:p-3 border ${isCurrentOrPassed
                             ? selectedTheme === 'oscuro'
                               ? 'bg-green-800/30 border-green-600'
                               : 'bg-green-100 border-green-300'
                             : selectedTheme === 'oscuro'
                               ? 'bg-gray-700 border-gray-600'
                               : 'bg-gray-50 border-gray-200'
-                        }`}
+                          }`}
                       >
                         <p
                           className={`text-xs font-medium ${selectedTheme === 'oscuro' ? 'text-gray-300' : 'text-gray-700'}`}
@@ -1065,13 +1060,12 @@ export default function HomePage() {
                           {rank.name}
                         </p>
                         <p
-                          className={`text-sm sm:text-base font-bold ${
-                            isCurrentOrPassed
+                          className={`text-sm sm:text-base font-bold ${isCurrentOrPassed
                               ? 'text-green-600'
                               : selectedTheme === 'oscuro'
                                 ? 'text-gray-400'
                                 : 'text-gray-500'
-                          }`}
+                            }`}
                         >
                           ${rank.expectedIncome.toLocaleString()}
                         </p>
@@ -1241,8 +1235,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={level.id}
-                    className={`rounded-xl border p-6 transition-all duration-300 ${
-                      isCurrentLevel
+                    className={`rounded-xl border p-6 transition-all duration-300 ${isCurrentLevel
                         ? selectedTheme === 'oscuro'
                           ? 'bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-blue-600 shadow-lg'
                           : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300 shadow-lg'
@@ -1253,20 +1246,19 @@ export default function HomePage() {
                           : selectedTheme === 'oscuro'
                             ? 'bg-gray-800 border-gray-600 hover:border-blue-600 hover:shadow-md'
                             : 'bg-white border-gray-200 hover:border-blue-200 hover:shadow-md'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center space-x-4">
                         <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${
-                            isCurrentLevel
+                          className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${isCurrentLevel
                               ? 'bg-gradient-to-r from-blue-500 to-purple-600'
                               : isCompleted
                                 ? 'bg-green-500'
                                 : selectedTheme === 'oscuro'
                                   ? 'bg-gray-600'
                                   : 'bg-gray-400'
-                          }`}
+                            }`}
                         >
                           {level.id}
                         </div>
@@ -1395,15 +1387,14 @@ export default function HomePage() {
                     {simulationState.notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                          notification.read
+                        className={`flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-all ${notification.read
                             ? selectedTheme === 'oscuro'
                               ? 'bg-gray-700 border-gray-600 opacity-60'
                               : 'bg-gray-50 border-gray-200 opacity-60'
                             : selectedTheme === 'oscuro'
                               ? `bg-${notification.color}-900/30 border-${notification.color}-600`
                               : `bg-${notification.color}-50 border-${notification.color}-200`
-                        }`}
+                          }`}
                         onClick={() => markNotificationAsRead(notification.id)}
                       >
                         <div
@@ -1955,9 +1946,8 @@ export default function HomePage() {
       />
 
       <div
-        className={`min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-300 ${
-          selectedTheme === 'oscuro' ? 'bg-gray-900' : ''
-        }`}
+        className={`min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-300 ${selectedTheme === 'oscuro' ? 'bg-gray-900' : ''
+          }`}
         style={{
           backgroundImage:
             selectedTheme === 'claro'
@@ -2102,11 +2092,10 @@ export default function HomePage() {
               <button
                 onClick={() => handleUsePointsForTime('puntos')}
                 disabled={simulationState.points < 100}
-                className={`w-full p-4 rounded-lg transition-colors cursor-pointer text-left ${
-                  simulationState.points >= 100
+                className={`w-full p-4 rounded-lg transition-colors cursor-pointer text-left ${simulationState.points >= 100
                     ? 'bg-yellow-500 text-white hover:bg-yellow-600'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 <div className="flex justify-between items-center">
                   <div>
@@ -2187,12 +2176,10 @@ export default function HomePage() {
           amount={timerState.penaltyPrice}
           description="Reactivación de cuenta suspendida"
           paymentType="multa"
-          onPaymentSuccess={(details) => {
-            const { simulatePaymentSuccess } = useSimulation();
+          onPaymentSuccess={(details) => { 
             simulatePaymentSuccess('sancion', details.amount);
             modalState.closeModal('showPenaltyPaymentModal');
-            timerState.resetTimer();
-          }}
+            timerState.resetTimer(); }}
         />
       )}
 

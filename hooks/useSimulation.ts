@@ -361,7 +361,7 @@ export const useSimulation = () => {
         subReferralCount: userData.subReferralCount || 1,
         totalNetwork: userData.totalNetwork || 3,
         notifications: notifications,
-        unreadCount: notifications.filter((n) => !n.read).length,
+        unreadCount: notifications.filter((n: { read: boolean }) => !n.read).length,
         availableTabs,
         totemCount,
         hasTimeExtension: userData.hasTimeExtension || false,

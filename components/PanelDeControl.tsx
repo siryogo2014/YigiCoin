@@ -439,10 +439,6 @@ function PanelDeControl({
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, value }) => `${name}: ${value}%`}
-                  labelStyle={{
-                    fontSize: 10,
-                    fill: selectedTheme === 'oscuro' ? '#F3F4F6' : '#1F2937',
-                  }}
                 >
                   {referidosData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />

@@ -242,8 +242,10 @@ export const getPaymentConfig = (type: string): PaymentTypeConfig | null => {
   return PAYMENT_CONFIG.paymentTypes[type as keyof typeof PAYMENT_CONFIG.paymentTypes] || null;
 };
 
-export const getNetworkConfig = (networkId: string) => {
-  return PAYMENT_CONFIG.metamask.supportedNetworks[networkId] || null;
+export const getNetworkConfig = (
+  networkId: keyof typeof PAYMENT_CONFIG.metamask.supportedNetworks
+) => {
+  return PAYMENT_CONFIG.metamask.supportedNetworks[networkId] ?? null;
 };
 
 export const isPaymentMethodAllowed = (paymentType: string, method: string): boolean => {

@@ -179,6 +179,8 @@ function PublicidadSection({ selectedTheme = 'claro' }: PublicidadSectionProps) 
       description: adForm.description.trim(),
       url: adForm.url.trim(),
       imageUrl: adForm.imageUrl.trim() || undefined,
+      // 👇 CAMBIO MÍNIMO: requerido por el tipo UserAd
+      maxViews: currentRankData?.monthlyVisits ?? 100,
     });
 
     if (success) {

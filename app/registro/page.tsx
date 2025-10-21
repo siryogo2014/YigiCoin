@@ -5,25 +5,74 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useReferralLinks } from '../../hooks/useReferralLinks';
 
+// ==== Tipos mínimos para corregir TS ====
+interface LinkValidation {
+  isValid: boolean;
+  referrerId: string | null;      // <- puede ser null
+  isLoading: boolean;
+  error: string | null;           // <- puede ser null
+}
+
+type RegistrationFormData = {
+  // Paso 1
+  nombre: string;
+  apellido: string;
+  nombreUsuario: string;
+  email: string;
+  confirmarEmail: string;
+  telefono: string;
+  genero: string;
+
+  // Paso 2
+  password: string;
+  confirmPassword: string;
+  verificationCode: string[];
+
+  // Paso 3
+  acceptTerms: boolean;
+  acceptPrivacy: boolean;
+  acceptMarketing: boolean;
+  paymentCompleted: boolean;
+};
+
+type Errors = {
+  // <-- Ajuste clave: el índice acepta string | undefined
+  [key: string]: string | undefined;
+  nombre?: string;
+  apellido?: string;
+  nombreUsuario?: string;
+  email?: string;
+  confirmarEmail?: string;
+  telefono?: string;
+  genero?: string;
+  password?: string;
+  confirmPassword?: string;
+  verificationCode?: string;
+  acceptTerms?: string;
+  acceptPrivacy?: string;
+  payment?: string;
+  submit?: string;
+};
+
 // Componente interno que usa useSearchParams
 function RegistroContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const refCode = searchParams.get('ref');
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [mounted, setMounted] = useState(false);
-  const [linkValidation, setLinkValidation] = useState({
+  const [currentStep, setCurrentStep] = useState<number>(1);
+  const [mounted, setMounted] = useState<boolean>(false);
+  const [linkValidation, setLinkValidation] = useState<LinkValidation>({
     isValid: true,
     referrerId: 'usuario_demo',
     isLoading: false,
     error: null,
   });
 
-  // CORREGIDO: Generar ID único dinámico para el nuevo usuario
-  const [newUserId] = useState(() => `user_${Date.now()}`);
+  // ID único para el nuevo usuario
+  const [newUserId] = useState<string>(() => `user_${Date.now()}`);
 
-  // CORREGIDO: Usar hook de referralLinks con ID dinámico o detectar usuario actual
+  // Hook de referidos
   const getCurrentUserId = () => {
     try {
       const userData = JSON.parse(localStorage.getItem('user_simulation_data') || '{}');
@@ -32,10 +81,9 @@ function RegistroContent() {
       return 'usuario_demo';
     }
   };
-
   const referralLinks = useReferralLinks(getCurrentUserId());
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegistrationFormData>({
     // Paso 1: Información personal
     nombre: '',
     apellido: '',
@@ -43,7 +91,7 @@ function RegistroContent() {
     email: '',
     confirmarEmail: '',
     telefono: '',
-    genero: '', // NUEVO: Campo género agregado
+    genero: '',
 
     // Paso 2: Verificación de correo
     password: '',
@@ -57,20 +105,20 @@ function RegistroContent() {
     paymentCompleted: false,
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [codeSent, setCodeSent] = useState(false);
-  const [countdown, setCountdown] = useState(60);
-  const [canResend, setCanResend] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errors, setErrors] = useState<Errors>({});
+  const [codeSent, setCodeSent] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<number>(60);
+  const [canResend, setCanResend] = useState<boolean>(false);
 
   // Inicialización
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // CORREGIDO: Validar enlace de referido ANTES de limpiar localStorage
+  // Validar enlace de referido
   useEffect(() => {
     if (!mounted || !refCode) {
       if (mounted && !refCode) {
@@ -81,7 +129,6 @@ function RegistroContent() {
           error: null,
         });
 
-        // CORREGIDO: Limpiar solo después de validar o cuando no hay código
         localStorage.removeItem('user_simulation_data');
         localStorage.removeItem('simulation_notifications');
         localStorage.removeItem('simulation_transactions');
@@ -111,7 +158,6 @@ function RegistroContent() {
         error: null,
       });
 
-      // CORREGIDO: Solo limpiar datos de simulación después de validar exitosamente
       localStorage.removeItem('user_simulation_data');
       localStorage.removeItem('simulation_notifications');
       localStorage.removeItem('simulation_transactions');
@@ -129,7 +175,7 @@ function RegistroContent() {
   useEffect(() => {
     if (!mounted || !codeSent) return;
 
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (countdown > 0) {
       timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
     } else {
@@ -141,16 +187,24 @@ function RegistroContent() {
     };
   }, [mounted, countdown, codeSent]);
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  // Acepta inputs y selects
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target as HTMLInputElement | HTMLSelectElement;
+    const checked = (e.target as HTMLInputElement).checked;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
 
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
-  const handleCodeChange = (index, value) => {
+  const handleCodeChange = (index: number, value: string) => {
     if (value.length <= 1) {
       const newCode = [...formData.verificationCode];
       newCode[index] = value;
@@ -163,33 +217,33 @@ function RegistroContent() {
     }
   };
 
-  const handleKeyDown = (index, e) => {
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace' && !formData.verificationCode[index] && index > 0) {
       const prevInput = document.getElementById(`code-${index - 1}`);
       prevInput?.focus();
     }
   };
 
-  // CORREGIDO 1: Reactivar validaciones del formulario
-  const validateStep = (step) => {
-    const newErrors = {};
+  // Validaciones por paso
+  const validateStep = (step: number): boolean => {
+    const newErrors: Errors = {};
 
     if (step === 1) {
-      // Validar nombre
+      // nombre
       if (!formData.nombre.trim()) {
         newErrors.nombre = 'El nombre es requerido';
       } else if (formData.nombre.trim().length < 2) {
         newErrors.nombre = 'El nombre debe tener al menos 2 caracteres';
       }
 
-      // Validar apellido
+      // apellido
       if (!formData.apellido.trim()) {
         newErrors.apellido = 'El apellido es requerido';
       } else if (formData.apellido.trim().length < 2) {
         newErrors.apellido = 'El apellido debe tener al menos 2 caracteres';
       }
 
-      // Validar nombre de usuario
+      // usuario
       if (!formData.nombreUsuario.trim()) {
         newErrors.nombreUsuario = 'El nombre de usuario es requerido';
       } else if (formData.nombreUsuario.trim().length < 3) {
@@ -198,7 +252,7 @@ function RegistroContent() {
         newErrors.nombreUsuario = 'Solo se permiten letras, números y guiones bajos';
       }
 
-      // Validar email
+      // email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!formData.email.trim()) {
         newErrors.email = 'El correo electrónico es requerido';
@@ -206,57 +260,47 @@ function RegistroContent() {
         newErrors.email = 'El correo electrónico es inválido';
       }
 
-      // Validar confirmación de email
       if (!formData.confirmarEmail.trim()) {
         newErrors.confirmarEmail = 'Confirma tu correo electrónico';
       } else if (formData.email !== formData.confirmarEmail) {
         newErrors.confirmarEmail = 'Los correos electrónicos no coinciden';
       }
 
-      // Validar teléfono
+      // teléfono
       if (!formData.telefono.trim()) {
         newErrors.telefono = 'El teléfono es requerido';
       } else if (formData.telefono.trim().length < 10) {
         newErrors.telefono = 'El teléfono debe tener al menos 10 caracteres';
       }
 
-      // Validar género
+      // género
       if (!formData.genero) {
         newErrors.genero = 'El género es requerido';
       }
     }
 
     if (step === 2) {
-      // Validar contraseña
       if (!formData.password) {
         newErrors.password = 'La contraseña es requerida';
       } else if (formData.password.length < 8) {
         newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
       }
 
-      // Validar confirmación de contraseña
       if (!formData.confirmPassword) {
         newErrors.confirmPassword = 'Confirma tu contraseña';
       } else if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = 'Las contraseñas no coinciden';
       }
 
-      // Validar código de verificación si fue enviado
       if (codeSent && formData.verificationCode.join('').length !== 6) {
         newErrors.verificationCode = 'Ingresa el código completo de 6 dígitos';
-      }
+        }
     }
 
     if (step === 3) {
-      if (!formData.acceptTerms) {
-        newErrors.acceptTerms = 'Debes aceptar los términos y condiciones';
-      }
-      if (!formData.acceptPrivacy) {
-        newErrors.acceptPrivacy = 'Debes aceptar la política de privacidad';
-      }
-      if (!formData.paymentCompleted) {
-        newErrors.payment = 'Debes completar el pago de $3 USD';
-      }
+      if (!formData.acceptTerms) newErrors.acceptTerms = 'Debes aceptar los términos y condiciones';
+      if (!formData.acceptPrivacy) newErrors.acceptPrivacy = 'Debes aceptar la política de privacidad';
+      if (!formData.paymentCompleted) newErrors.payment = 'Debes completar el pago de $3 USD';
     }
 
     setErrors(newErrors);
@@ -275,7 +319,7 @@ function RegistroContent() {
       setCodeSent(true);
       setCountdown(60);
       setCanResend(false);
-    } catch (err) {
+    } catch {
       setErrors({ email: 'Error al enviar el código' });
     } finally {
       setIsLoading(false);
@@ -289,7 +333,7 @@ function RegistroContent() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (err) {
+    } catch {
       setErrors({ verificationCode: 'Error al reenviar el código' });
     } finally {
       setIsLoading(false);
@@ -308,7 +352,7 @@ function RegistroContent() {
         acceptMarketing: true,
       }));
       setErrors({});
-    } catch (err) {
+    } catch {
       setErrors({ payment: 'Error al procesar el pago' });
     } finally {
       setIsLoading(false);
@@ -325,17 +369,15 @@ function RegistroContent() {
     setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!validateStep(currentStep)) {
-      return;
-    }
+    if (!validateStep(currentStep)) return;
 
     setIsLoading(true);
 
     try {
-      // SIMULACIÓN: Datos automáticos si están vacíos
+      // SIMULACIÓN de datos
       const userData = {
         id: newUserId,
         name: formData.nombre || 'Usuario Demo',
@@ -350,14 +392,12 @@ function RegistroContent() {
         registrationDate: new Date().toISOString(),
       };
 
-      // CORREGIDO: Si hay un código de referido válido, marcar enlace como usado
+      // Marcar enlace de referido como usado si aplica
       if (refCode && linkValidation.isValid && linkValidation.referrerId) {
         try {
           const linkUsed = referralLinks.useLink(refCode, newUserId, userData);
-          if (!linkUsed) {
-            throw new Error('No se pudo procesar el enlace de referido');
-          }
-        } catch (error) {
+          if (!linkUsed) throw new Error('No se pudo procesar el enlace de referido');
+        } catch {
           setErrors({
             submit:
               'Error al procesar el enlace de referido. El enlace puede haber expirado o ya estar en uso.',
@@ -367,7 +407,6 @@ function RegistroContent() {
         }
       }
 
-      // NUEVO: Crear notificaciones iniciales simulando los pagos recibidos
       const initialNotifications = [
         {
           id: 1,
@@ -411,7 +450,6 @@ function RegistroContent() {
         },
       ];
 
-      // NUEVO: Crear historial de transacciones inicial
       const initialTransactions = [
         {
           id: 1,
@@ -431,21 +469,17 @@ function RegistroContent() {
         },
       ];
 
-      // Guardar en localStorage para simulación
       localStorage.setItem('user_simulation_data', JSON.stringify(userData));
       localStorage.setItem('simulation_notifications', JSON.stringify(initialNotifications));
       localStorage.setItem('simulation_transactions', JSON.stringify(initialTransactions));
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      alert(
-        '¡Registro exitoso! Ya has recibido 2 pagos de $3 USD cada uno. Tu balance inicial es de $6 USD.'
-      );
+      alert('¡Registro exitoso! Ya has recibido 2 pagos de $3 USD cada uno. Tu balance inicial es de $6 USD.');
       router.push('/');
-    } catch (err) {
+    } catch {
       setErrors({
-        submit:
-          'Error al crear la cuenta. Por favor, verifica todos los datos e intenta nuevamente.',
+        submit: 'Error al crear la cuenta. Por favor, verifica todos los datos e intenta nuevamente.',
       });
     } finally {
       setIsLoading(false);
@@ -614,7 +648,7 @@ function RegistroContent() {
             </div>
 
             <div>
-              <label htmlFor="telefono" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="telefono" className="block text_sm font-medium text-gray-700 mb-1">
                 Teléfono *
               </label>
               <div className="relative">
@@ -636,7 +670,7 @@ function RegistroContent() {
               {errors.telefono && <p className="text-red-500 text-xs mt-1">{errors.telefono}</p>}
             </div>
 
-            {/* NUEVO: Campo de género */}
+            {/* Género */}
             <div>
               <label htmlFor="genero" className="block text-sm font-medium text-gray-700 mb-1">
                 Género *
@@ -690,9 +724,7 @@ function RegistroContent() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                 >
-                  <i
-                    className={`${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-gray-400`}
-                  />
+                  <i className={`${showPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-gray-400`} />
                 </button>
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
@@ -725,9 +757,7 @@ function RegistroContent() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                 >
-                  <i
-                    className={`${showConfirmPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-gray-400`}
-                  />
+                  <i className={`${showConfirmPassword ? 'ri-eye-off-line' : 'ri-eye-line'} text-gray-400`} />
                 </button>
               </div>
               {errors.confirmPassword && (
@@ -741,9 +771,7 @@ function RegistroContent() {
                   <i className="ri-mail-line text-2xl text-blue-600"></i>
                 </div>
                 <h4 className="font-medium text-gray-800 mb-2">Verificar tu correo</h4>
-                <p className="text-sm text-gray-600">
-                  Necesitamos verificar tu dirección de correo electrónico
-                </p>
+                <p className="text-sm text-gray-600">Necesitamos verificar tu dirección de correo electrónico</p>
               </div>
 
               {!codeSent ? (
@@ -1004,7 +1032,7 @@ function RegistroContent() {
 
         {/* Indicador de progreso */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify_between mb-2">
             <span className="text-sm font-medium text-gray-200">Paso {currentStep} de 3</span>
             <span className="text-sm text-gray-300">{Math.round((currentStep / 3) * 100)}%</span>
           </div>
